@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: process-dashboard-dev
+    volumes:
+      - .:/app
+      - ~/.config/process-dashboard:/home/dashboard/.config/process-dashboard
+      - ~/.local/share/process-dashboard:/home/dashboard/.local/share/process-dashboard
+    environment:
+      - TERM=xterm-256color
+      - LOG_LEVEL=DEBUG
+      - PYTHONPATH=/app/src
+    network_mode: host
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
+    tty: true
+    stdin_open: true
+    command: python -m pytest
+
+  lint:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONPATH=/app/src
+    command: ./scripts/lint.sh
+
+  type-check:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONPATH=/app/src
+    command: mypy src
+

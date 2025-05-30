@@ -1,0 +1,47 @@
+{
+    "alerts": {
+        "cpu_high": {
+            "threshold": 80,
+            "duration": 300,
+            "actions": ["notify", "log"]
+        },
+        "memory_high": {
+            "threshold": 85,
+            "duration": 300,
+            "actions": ["notify", "log"]
+        },
+        "disk_critical": {
+            "threshold": 90,
+            "duration": 0,
+            "actions": ["notify", "log", "email"]
+        }
+    },
+    "monitoring": {
+        "interval": 5,
+        "history_length": 3600,
+        "metrics_enabled": {
+            "cpu": true,
+            "memory": true,
+            "disk": true,
+            "network": true
+        }
+    },
+    "notifications": {
+        "email": {
+            "enabled": false,
+            "recipients": []
+        },
+        "desktop": {
+            "enabled": true,
+            "urgency": "normal"
+        }
+    },
+    "logging": {
+        "level": "INFO",
+        "file": "monitoring.log",
+        "rotation": {
+            "max_size": "10M",
+            "backup_count": 5
+        }
+    }
+}

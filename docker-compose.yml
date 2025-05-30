@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: process-dashboard
+    volumes:
+      - ~/.config/process-dashboard:/home/dashboard/.config/process-dashboard
+      - ~/.local/share/process-dashboard:/home/dashboard/.local/share/process-dashboard
+    environment:
+      - TERM=xterm-256color
+      - LOG_LEVEL=INFO
+    # Host network mode to access system processes
+    network_mode: host
+    # Required capabilities for process monitoring
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
+    # Ensure proper terminal handling
+    tty: true
+    stdin_open: true
+
+volumes:
+  config:
+  logs:

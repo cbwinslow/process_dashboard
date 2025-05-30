@@ -176,3 +176,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
+
+## Docker Installation
+
+You can run Process Dashboard using Docker:
+
+```bash
+# Build and run using Docker Compose
+docker-compose up --build
+
+# Or using Docker directly
+docker build -t process-dashboard .
+docker run -it \
+    --network host \
+    --cap-add SYS_PTRACE \
+    --security-opt seccomp=unconfined \
+    -v ~/.config/process-dashboard:/home/dashboard/.config/process-dashboard \
+    -v ~/.local/share/process-dashboard:/home/dashboard/.local/share/process-dashboard \
+    process-dashboard
+```
+
+The Docker container runs with minimal privileges required for process monitoring and maintains configuration and logs on the host system.

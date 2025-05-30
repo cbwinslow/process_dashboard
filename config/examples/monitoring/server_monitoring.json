@@ -1,0 +1,56 @@
+{
+    "alerts": {
+        "cpu_high": {
+            "threshold": 90,
+            "duration": 600,
+            "actions": ["email", "log"]
+        },
+        "memory_high": {
+            "threshold": 90,
+            "duration": 600,
+            "actions": ["email", "log"]
+        },
+        "disk_critical": {
+            "threshold": 95,
+            "duration": 0,
+            "actions": ["email", "log"]
+        },
+        "network_errors": {
+            "threshold": 100,
+            "duration": 300,
+            "actions": ["email", "log"]
+        }
+    },
+    "monitoring": {
+        "interval": 30,
+        "history_length": 86400,
+        "metrics_enabled": {
+            "cpu": true,
+            "memory": true,
+            "disk": true,
+            "network": true,
+            "process": true
+        }
+    },
+    "notifications": {
+        "email": {
+            "enabled": true,
+            "recipients": ["admin@example.com"],
+            "smtp": {
+                "host": "localhost",
+                "port": 25
+            }
+        },
+        "desktop": {
+            "enabled": false
+        }
+    },
+    "logging": {
+        "level": "WARNING",
+        "file": "server-monitoring.log",
+        "rotation": {
+            "max_size": "50M",
+            "backup_count": 10
+        }
+    }
+}

@@ -1,275 +1,222 @@
 """
-Matrix-themed configuration panel with advanced controls.
+Configuration panel widget for Process Dashboard.
+
+This module implements a configuration panel that allows users to
+customize dashboard settings and appearance.
 """
 
-from dataclasses import dataclass
-from typing import Union, Optional
-import re
+from textual.widget import Widget
+from textual.containers import Vertical
+from textual.widgets import Switch, Select, Input, Button, Static
+from textual.message import Message
+from typing import Optional
+import logging
 
-from textual import on
-from textual.app import ComposeResult
-from textual.containers import Container, Vertical, Horizontal, Grid
-from textual.widgets import (
-    Label, Switch, Select, Button, Input, Static
-)
-from textual.reactive import reactive
-from rich.text import Text
-from rich.style import Style
+from config.settings import DashboardConfig
 
-@dataclass
-class NumericInput:
-    """Configuration for numeric input validation."""
-    min_value: float
-    max_value: float
-    step: float
-    default: float
-    suffix: str = ""
+logger = logging.getLogger("dashboard.config")
 
-class ConfigPanel(Container):
-    """Configuration panel with matrix theme."""
-
-    # Configuration constraints
-    NUMERIC_CONFIGS = {
-        "opacity": NumericInput(50, 100, 5, 90, "%"),
-        "process_update": NumericInput(0.5, 5.0, 0.5, 1.0, "s"),
-        "resource_update": NumericInput(0.5, 5.0, 0.5, 2.0, "s"),
-        "network_update": NumericInput(0.5, 5.0, 0.5, 1.0, "s"),
-    }
+class ConfigPanel(Widget):
+    """Configuration panel widget."""
 
     DEFAULT_CSS = """
     ConfigPanel {
+        layout: vertical;
+        background: #001100;
         height: 100%;
-        border: solid #003300;
-        background: #000000 90%;
+        padding: 1;
     }
 
     .config-section {
-        padding: 1;
-        margin-bottom: 1;
-        border: solid #003300;
+        margin: 1 0;
     }
 
-    .config-section:focus-within {
-        border: solid #00ff00;
-        background: #001100;
-    }
-
-    .section-title {
-        text-align: center;
+    .config-title {
         color: #00ff00;
         text-style: bold;
         margin-bottom: 1;
     }
 
-    .config-row {
-        height: 3;
-        margin-bottom: 1;
-        layout: grid;
-        grid-size: 2;
-        grid-columns: 1fr 1fr;
-        align: center middle;
-    }
-
-    .input-group {
-        width: 100%;
-        height: 100%;
-        layout: horizontal;
-        align: right middle;
-    }
-
-    Input {
-        width: 10;
-        background: #001100;
-        color: #00ff00;
-        border: solid #003300;
-    }
-
-    Input:focus {
-        border: solid #00ff00;
-    }
-
-    Input.-invalid {
-        border: solid red;
-    }
-
-    Static.input-suffix {
-        width: 2;
-        color: #00ff00;
-        text-align: left;
-        padding-left: 1;
-    }
-
     Switch {
-        background: #001100;
-        margin-right: 1;
-    }
-
-    Switch.-on {
-        background: #00ff00 50%;
+        margin: 1 0;
     }
 
     Select {
-        width: 30;
-        background: #001100;
-        color: #00ff00;
-        border: solid #003300;
+        width: 100%;
+        margin: 1 0;
     }
 
-    Select:focus {
-        border: solid #00ff00;
+    Input {
+        width: 100%;
+        margin: 1 0;
     }
 
     Button {
-        border: solid #003300;
-        background: #001100;
-        min-width: 15;
-    }
-
-    Button:hover {
-        border: solid #00ff00;
+        margin: 1 0;
+        width: 100%;
         background: #002200;
+        color: #00ff00;
+        border: solid green;
     }
 
-    #action-buttons {
-        height: 3;
-        align: center middle;
-        background: #001100;
-        padding: 0 1;
+    .status {
+        color: #00ff00;
+        text-align: center;
+        padding: 1;
     }
     """
 
-    def validate_numeric(self, value: str, config: NumericInput) -> Optional[float]:
-        """Validate numeric input against constraints.
-        
-        Args:
-            value: The input value to validate
-            config: The configuration constraints
+    class ConfigChanged(Message):
+        """Message emitted when configuration changes."""
+        def __init__(self, config: DashboardConfig):
+            self.config = config
+            super().__init__()
 
-        Returns:
-            The validated float value or None if invalid
-        """
-        try:
-            num = float(value)
-            if config.min_value <= num <= config.max_value:
-                # Round to nearest step
-                steps = round((num - config.min_value) / config.step)
-                return config.min_value + (steps * config.step)
-            return None
-        except ValueError:
-            return None
+    def __init__(self):
+        """Initialize the configuration panel."""
+        super().__init__()
+        self.config = DashboardConfig()
+        self._status: Optional[Static] = None
 
-    def compose(self) -> ComposeResult:
+    def compose(self):
         """Create child widgets."""
-        # Display Settings
-        with Vertical(classes="config-section"):
-            yield Label("Display Settings", classes="section-title")
-            with Container(classes="config-row"):
-                yield Label("Matrix Effect")
-                yield Switch(value=True)
-            with Container(classes="config-row"):
-                yield Label("Theme")
+        with Vertical():
+            # Appearance section
+            with Vertical(classes="config-section"):
+                yield Static("Appearance", classes="config-title")
+                yield Switch("Matrix Theme", id="matrix_theme", value=True)
                 yield Select(
-                    [(name, name) for name in ["Matrix", "Matrix Light", "Matrix Dark"]],
-                    value="Matrix"
+                    options=[
+                        ("System Default", "system"),
+                        ("Dark", "dark"),
+                        ("Light", "light")
+                    ],
+                    value="dark",
+                    id="theme"
                 )
-            with Container(classes="config-row"):
-                yield Label("Opacity")
-                with Horizontal(classes="input-group"):
-                    yield Input(
-                        value=str(self.NUMERIC_CONFIGS["opacity"].default),
-                        id="opacity"
-                    )
-                    yield Static("%", classes="input-suffix")
+                yield Input(
+                    placeholder="Custom CSS Path",
+                    id="css_path"
+                )
 
-        # Update Intervals
-        with Vertical(classes="config-section"):
-            yield Label("Update Intervals", classes="section-title")
-            with Container(classes="config-row"):
-                yield Label("Process Update")
-                with Horizontal(classes="input-group"):
-                    yield Input(
-                        value=str(self.NUMERIC_CONFIGS["process_update"].default),
-                        id="process_update"
-                    )
-                    yield Static("s", classes="input-suffix")
-            with Container(classes="config-row"):
-                yield Label("Resource Update")
-                with Horizontal(classes="input-group"):
-                    yield Input(
-                        value=str(self.NUMERIC_CONFIGS["resource_update"].default),
-                        id="resource_update"
-                    )
-                    yield Static("s", classes="input-suffix")
-            with Container(classes="config-row"):
-                yield Label("Network Update")
-                with Horizontal(classes="input-group"):
-                    yield Input(
-                        value=str(self.NUMERIC_CONFIGS["network_update"].default),
-                        id="network_update"
-                    )
-                    yield Static("s", classes="input-suffix")
+            # Monitoring section
+            with Vertical(classes="config-section"):
+                yield Static("Monitoring", classes="config-title")
+                yield Input(
+                    placeholder="Update Interval (seconds)",
+                    value="2",
+                    id="update_interval"
+                )
+                yield Input(
+                    placeholder="History Length (minutes)",
+                    value="60",
+                    id="history_length"
+                )
+                yield Switch("Show System Processes", id="show_system", value=True)
+                yield Switch("Show Child Processes", id="show_children", value=True)
 
-        # Display Components
-        with Vertical(classes="config-section"):
-            yield Label("Components", classes="section-title")
-            with Container(classes="config-row"):
-                yield Label("Process List")
-                yield Switch(value=True)
-            with Container(classes="config-row"):
-                yield Label("Resource Monitor")
-                yield Switch(value=True)
-            with Container(classes="config-row"):
-                yield Label("Network Stats")
-                yield Switch(value=True)
-            with Container(classes="config-row"):
-                yield Label("File Browser")
-                yield Switch(value=True)
+            # Control section
+            with Vertical(classes="config-section"):
+                yield Static("Process Control", classes="config-title")
+                yield Switch("Confirm Actions", id="confirm_actions", value=True)
+                yield Switch("Allow Process Kill", id="allow_kill", value=True)
+                yield Switch("Allow Priority Change", id="allow_priority", value=True)
 
-        # Actions
-        with Horizontal(id="action-buttons"):
-            yield Button("Apply", variant="primary")
-            yield Button("Reset", variant="default")
+            # Action buttons
+            yield Button("Save Configuration", id="save")
+            yield Button("Reset to Defaults", id="reset")
+            
+            # Status message
+            self._status = Static("", classes="status")
+            yield self._status
 
-    @on(Input.Changed)
-    def validate_input(self, event: Input.Changed) -> None:
-        """Validate numeric input fields."""
-        if event.input.id in self.NUMERIC_CONFIGS:
-            config = self.NUMERIC_CONFIGS[event.input.id]
-            if valid_value := self.validate_numeric(event.value, config):
-                event.input.remove_class("-invalid")
-                if event.value != str(valid_value):
-                    event.input.value = str(valid_value)
+    def on_mount(self):
+        """Handle widget mount."""
+        self.load_config()
+
+    def on_switch_changed(self, event: Switch.Changed):
+        """Handle switch changes."""
+        try:
+            setattr(self.config, event.switch.id, event.value)
+            self._show_status("Setting updated")
+        except Exception as e:
+            logger.error(f"Failed to update switch setting: {e}")
+            self._show_status("Failed to update setting", error=True)
+
+    def on_select_changed(self, event: Select.Changed):
+        """Handle select changes."""
+        try:
+            setattr(self.config, event.select.id, event.value)
+            self._show_status("Setting updated")
+        except Exception as e:
+            logger.error(f"Failed to update select setting: {e}")
+            self._show_status("Failed to update setting", error=True)
+
+    def on_input_changed(self, event: Input.Changed):
+        """Handle input changes."""
+        try:
+            # Convert numeric inputs
+            if event.input.id in ("update_interval", "history_length"):
+                value = int(event.value) if event.value.isdigit() else None
+                if value is not None:
+                    setattr(self.config, event.input.id, value)
+                    self._show_status("Setting updated")
             else:
-                event.input.add_class("-invalid")
+                setattr(self.config, event.input.id, event.value)
+                self._show_status("Setting updated")
+        except Exception as e:
+            logger.error(f"Failed to update input setting: {e}")
+            self._show_status("Invalid input value", error=True)
 
-    @on(Button.Pressed, "#apply-config")
-    def apply_config(self) -> None:
-        """Apply the current configuration."""
-        # Validate all inputs first
-        for input_id in self.NUMERIC_CONFIGS:
-            input_widget = self.query_one(f"#{input_id}", Input)
-            if "-invalid" in input_widget.classes:
-                self.notify("Please fix invalid values before applying", severity="error")
-                return
+    def on_button_pressed(self, event: Button.Pressed):
+        """Handle button presses."""
+        if event.button.id == "save":
+            self.save_config()
+        elif event.button.id == "reset":
+            self.reset_config()
 
-        self.notify("Configuration applied", severity="information")
+    def load_config(self):
+        """Load configuration from file."""
+        try:
+            # Update widget values from config
+            self.query_one("#matrix_theme", Switch).value = self.config.matrix_theme
+            self.query_one("#theme", Select).value = self.config.theme
+            self.query_one("#css_path", Input).value = self.config.css_path or ""
+            self.query_one("#update_interval", Input).value = str(self.config.update_interval)
+            self.query_one("#history_length", Input).value = str(self.config.history_length)
+            self.query_one("#show_system", Switch).value = self.config.show_system
+            self.query_one("#show_children", Switch).value = self.config.show_children
+            self.query_one("#confirm_actions", Switch).value = self.config.confirm_actions
+            self.query_one("#allow_kill", Switch).value = self.config.allow_kill
+            self.query_one("#allow_priority", Switch).value = self.config.allow_priority
+            
+            self._show_status("Configuration loaded")
+        except Exception as e:
+            logger.error(f"Failed to load configuration: {e}")
+            self._show_status("Failed to load configuration", error=True)
 
-    @on(Button.Pressed, "#reset-config")
-    def reset_config(self) -> None:
+    def save_config(self):
+        """Save configuration to file."""
+        try:
+            self.config.save()
+            self.post_message(self.ConfigChanged(self.config))
+            self._show_status("Configuration saved")
+        except Exception as e:
+            logger.error(f"Failed to save configuration: {e}")
+            self._show_status("Failed to save configuration", error=True)
+
+    def reset_config(self):
         """Reset configuration to defaults."""
-        # Reset numeric inputs
-        for input_id, config in self.NUMERIC_CONFIGS.items():
-            input_widget = self.query_one(f"#{input_id}", Input)
-            input_widget.value = str(config.default)
-            input_widget.remove_class("-invalid")
+        try:
+            self.config = DashboardConfig()
+            self.load_config()
+            self._show_status("Configuration reset to defaults")
+        except Exception as e:
+            logger.error(f"Failed to reset configuration: {e}")
+            self._show_status("Failed to reset configuration", error=True)
 
-        # Reset switches
-        for switch in self.query(Switch):
-            switch.value = True
-
-        # Reset theme
-        theme_select = self.query_one(Select)
-        theme_select.value = "Matrix"
-
-        self.notify("Configuration reset to defaults", severity="information")
-
+    def _show_status(self, message: str, error: bool = False):
+        """Show status message."""
+        if self._status:
+            style = "red" if error else "green"
+            self._status.update(f"[{style}]{message}[/]")
