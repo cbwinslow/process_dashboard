@@ -1,3 +1,7 @@
 {
-    "python.analysis.autoImportCompletions": true
+    "python.analysis.autoImportCompletions": true,
+    "circleci.filters.branchFilter": "allBranches",
+    "circleci.persistedProjectSelection": [
+        "circleci/FXrXpNMLy4A1QMf3RhsJuC/Wf8Xu97RLd2RWfuHZhMiGj"
+    ]
 }

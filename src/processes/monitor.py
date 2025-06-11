@@ -11,6 +11,7 @@ import psutil
 from typing import Dict, Any, List, Optional, Set
 from time import time
 from datetime import datetime
+from dataclasses import dataclass
 
 logger = logging.getLogger("dashboard.monitor")
 
@@ -20,6 +21,13 @@ class ProcessError(Exception):
 
 ProcessInfo = Dict[str, Any]
 SystemResources = Dict[str, Any]
+
+@dataclass
+class ProcessHistoryEntry:
+    pid: int
+    cpu_percent: float
+    memory_percent: float
+    timestamp: float
 
 class ProcessMonitor:
     """Monitors system processes and resources."""

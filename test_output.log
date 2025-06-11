@@ -1,0 +1,269 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.2, pytest-8.0.2, pluggy-1.6.0
+rootdir: /home/cbwinslow/Projects/process_dashboard
+configfile: pyproject.toml
+testpaths: tests
+plugins: asyncio-0.23.5, cov-4.1.0
+asyncio: mode=Mode.STRICT
+collected 28 items
+
+tests/test_config_panel.py FF.FF                                         [ 17%]
+tests/test_file_browser.py F/home/cbwinslow/Projects/process_dashboard/venv/lib/python3.12/site-packages/coverage/report_core.py:110: CoverageWarning: Couldn't parse Python file '/home/cbwinslow/Projects/process_dashboard/src/config/correlation_engine.py' (couldnt-parse)
+  coverage._warn(msg, slug="couldnt-parse")
+
+
+=================================== FAILURES ===================================
+_______________________ test_config_panel_initialization _______________________
+
+app = TestApp(title='TestApp', classes={'-dark-mode'}, pseudo_classes={'dark', 'focus'})
+
+    @pytest.mark.asyncio
+    async def test_config_panel_initialization(app):
+        """Test that ConfigPanel initializes correctly."""
+        async with app.run_test():
+            panel = app.query_one(ConfigPanel)
+            assert panel is not None
+>           assert isinstance(panel.NUMERIC_CONFIGS, dict)
+E           AttributeError: 'ConfigPanel' object has no attribute 'NUMERIC_CONFIGS'
+
+tests/test_config_panel.py:29: AttributeError
+________________________ test_config_panel_composition _________________________
+
+app = TestApp(title='TestApp', classes={'-dark-mode'}, pseudo_classes={'dark', 'focus'})
+
+    @pytest.mark.asyncio
+    async def test_config_panel_composition(app):
+        """Test that ConfigPanel composes with required widgets."""
+        async with app.run_test():
+            panel = app.query_one(ConfigPanel)
+    
+            # Check for numeric input fields
+>           for input_id in panel.NUMERIC_CONFIGS:
+E           AttributeError: 'ConfigPanel' object has no attribute 'NUMERIC_CONFIGS'
+
+tests/test_config_panel.py:40: AttributeError
+________________________ test_numeric_input_validation _________________________
+
+app = TestApp(title='TestApp', classes={'-dark-mode'}, pseudo_classes={'dark', 'focus'})
+
+    @pytest.mark.asyncio
+    async def test_numeric_input_validation(app):
+        """Test numeric input validation."""
+        async with app.run_test():
+            panel = app.query_one(ConfigPanel)
+    
+            # Test opacity input
+>           opacity_input = panel.query_one("#opacity", Input)
+
+tests/test_config_panel.py:75: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ConfigPanel(), selector = '#opacity'
+expect_type = <class 'textual.widgets._input.Input'>
+
+    def query_one(
+        self,
+        selector: str | type[QueryType],
+        expect_type: type[QueryType] | None = None,
+    ) -> QueryType | Widget:
+        """Get a widget from this widget's children that matches a selector or widget type.
+    
+        Args:
+            selector: A selector or widget type.
+            expect_type: Require the object be of the supplied type, or None for any type.
+    
+        Raises:
+            WrongType: If the wrong type was found.
+            NoMatches: If no node matches the query.
+    
+        Returns:
+            A widget matching the selector.
+        """
+        _rich_traceback_omit = True
+    
+        base_node = self._get_dom_base()
+    
+        if isinstance(selector, str):
+            query_selector = selector
+        else:
+            query_selector = selector.__name__
+    
+        try:
+            selector_set = parse_selectors(query_selector)
+        except TokenError:
+            raise InvalidQueryFormat(
+                f"Unable to parse {query_selector!r} as a query; check for syntax errors"
+            ) from None
+    
+        if all(selectors.is_simple for selectors in selector_set):
+            cache_key = (base_node._nodes._updates, query_selector, expect_type)
+            cached_result = base_node._query_one_cache.get(cache_key)
+            if cached_result is not None:
+                return cached_result
+        else:
+            cache_key = None
+    
+        for node in walk_depth_first(base_node, with_root=False):
+            if not match(selector_set, node):
+                continue
+            if expect_type is not None and not isinstance(node, expect_type):
+                continue
+            if cache_key is not None:
+                base_node._query_one_cache[cache_key] = node
+            return node
+    
+>       raise NoMatches(f"No nodes match {selector!r} on {self!r}")
+E       textual.css.query.NoMatches: No nodes match '#opacity' on ConfigPanel()
+
+venv/lib/python3.12/site-packages/textual/dom.py:1496: NoMatches
+______________________________ test_config_reset _______________________________
+
+app = TestApp(title='TestApp', classes={'-dark-mode'}, pseudo_classes={'dark', 'focus'})
+
+    @pytest.mark.asyncio
+    async def test_config_reset(app):
+        """Test configuration reset functionality."""
+        async with app.run_test():
+            panel = app.query_one(ConfigPanel)
+    
+            # Modify some values
+>           opacity_input = panel.query_one("#opacity", Input)
+
+tests/test_config_panel.py:103: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ConfigPanel(), selector = '#opacity'
+expect_type = <class 'textual.widgets._input.Input'>
+
+    def query_one(
+        self,
+        selector: str | type[QueryType],
+        expect_type: type[QueryType] | None = None,
+    ) -> QueryType | Widget:
+        """Get a widget from this widget's children that matches a selector or widget type.
+    
+        Args:
+            selector: A selector or widget type.
+            expect_type: Require the object be of the supplied type, or None for any type.
+    
+        Raises:
+            WrongType: If the wrong type was found.
+            NoMatches: If no node matches the query.
+    
+        Returns:
+            A widget matching the selector.
+        """
+        _rich_traceback_omit = True
+    
+        base_node = self._get_dom_base()
+    
+        if isinstance(selector, str):
+            query_selector = selector
+        else:
+            query_selector = selector.__name__
+    
+        try:
+            selector_set = parse_selectors(query_selector)
+        except TokenError:
+            raise InvalidQueryFormat(
+                f"Unable to parse {query_selector!r} as a query; check for syntax errors"
+            ) from None
+    
+        if all(selectors.is_simple for selectors in selector_set):
+            cache_key = (base_node._nodes._updates, query_selector, expect_type)
+            cached_result = base_node._query_one_cache.get(cache_key)
+            if cached_result is not None:
+                return cached_result
+        else:
+            cache_key = None
+    
+        for node in walk_depth_first(base_node, with_root=False):
+            if not match(selector_set, node):
+                continue
+            if expect_type is not None and not isinstance(node, expect_type):
+                continue
+            if cache_key is not None:
+                base_node._query_one_cache[cache_key] = node
+            return node
+    
+>       raise NoMatches(f"No nodes match {selector!r} on {self!r}")
+E       textual.css.query.NoMatches: No nodes match '#opacity' on ConfigPanel()
+
+venv/lib/python3.12/site-packages/textual/dom.py:1496: NoMatches
+_______________________ test_file_browser_initialization _______________________
+
+app = TestApp(title='TestApp', classes={'-dark-mode'}, pseudo_classes={'dark', 'focus'})
+
+    @pytest.mark.asyncio
+    async def test_file_browser_initialization(app):
+        """Test that FileBrowser initializes correctly."""
+        async with app.run_test():
+            browser = app.query_one(FileBrowser)
+            assert browser is not None
+>           assert browser.current_path is not None
+E           AttributeError: 'FileBrowser' object has no attribute 'current_path'
+
+tests/test_file_browser.py:31: AttributeError
+
+---------- coverage: platform linux, python 3.12.2-final-0 -----------
+Name                                   Stmts   Miss  Cover   Missing
+--------------------------------------------------------------------
+src/__init__.py                            2      0   100%
+src/config/__init__.py                     3      0   100%
+src/config/alert_manager.py              198    198     0%   7-536
+src/config/config_manager.py             105    105     0%   7-227
+src/config/migrator.py                   117    117     0%   7-296
+src/config/notification_manager.py       228    228     0%   7-598
+src/config/notification_templates.py      91     91     0%   7-419
+src/config/settings.py                    74     39    47%   53-59, 67, 75-109, 117-152, 160-167
+src/config/template_analytics.py         136    136     0%   7-375
+src/config/template_categories.py        149    149     0%   7-382
+src/config/templates.py                   94     94     0%   7-420
+src/config/validators.py                 147    147     0%   7-430
+src/dashboard.py                         132    132     0%   9-331
+src/main.py                               79     79     0%   8-161
+src/monitoring/__init__.py                 4      4     0%   7-11
+src/monitoring/alerts.py                  66     66     0%   7-163
+src/monitoring/metrics.py                 45     45     0%   7-156
+src/processes/__init__.py                  3      0   100%
+src/processes/history.py                  17     17     0%   6-26
+src/processes/monitor.py                 140    115    18%   42-55, 63-107, 115-141, 164-207, 215-243, 254-266, 285-316
+src/processes/process_controller.py      186    186     0%   7-427
+src/processes/snmp_monitor.py             14     14     0%   8-35
+src/tests/__init__.py                      0      0   100%
+src/tests/dummy_ui_deps.py                 6      6     0%   4-12
+src/tests/test_alerts.py                  13     13     0%   4-18
+src/tests/test_config.py                  96     96     0%   5-161
+src/tests/test_integration.py            131    131     0%   7-238
+src/tests/test_metrics.py                 13     13     0%   4-18
+src/tests/test_process_controller.py      17     17     0%   4-24
+src/tests/test_process_history.py         24     24     0%   4-31
+src/tests/test_process_monitor.py         19     19     0%   4-25
+src/tests/test_process_panel.py           10     10     0%   4-15
+src/tests/test_settings.py                14     14     0%   4-19
+src/tests/test_utils_helpers.py           18     18     0%   4-25
+src/ui/__init__.py                         4      0   100%
+src/ui/analytics_dashboard.py            182    182     0%   7-485
+src/ui/config_editor.py                  183    183     0%   8-406
+src/ui/config_panel.py                   108     39    64%   73-74, 131-145, 159-161, 176-178, 182-189, 193-200
+src/ui/file_browser.py                    15      0   100%
+src/ui/file_dialog.py                     79     79     0%   7-231
+src/ui/matrix_background.py               96     96     0%   8-180
+src/ui/matrix_splash.py                  118    118     0%   5-190
+src/ui/process_panel.py                  219    219     0%   12-369
+src/ui/resource_monitor.py                58     43    26%   32-33, 37, 41-46, 50-91, 96, 98, 100
+src/ui/template_screen.py                184    184     0%   7-393
+src/utils/__init__.py                      2      2     0%   3-5
+src/utils/helpers.py                      18     18     0%   4-26
+src/version.py                            10      2    80%   12-13
+--------------------------------------------------------------------
+TOTAL                                   3667   3488     5%
+
+=========================== short test summary info ============================
+FAILED tests/test_config_panel.py::test_config_panel_initialization - Attribu...
+FAILED tests/test_config_panel.py::test_config_panel_composition - AttributeE...
+FAILED tests/test_config_panel.py::test_numeric_input_validation - textual.cs...
+FAILED tests/test_config_panel.py::test_config_reset - textual.css.query.NoMa...
+FAILED tests/test_file_browser.py::test_file_browser_initialization - Attribu...
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 5 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+=================== 5 failed, 1 passed, 3 warnings in 2.27s ====================
