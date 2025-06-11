@@ -97,3 +97,22 @@
 - All microgoals above are checked off and validated.
 
 ---
+
+## AI Optimizer Logging, Learning, and Database Integration (June 2025)
+
+### Microtasks
+1. [ ] Add a `logging` module for AI agents and orchestrator (logs to file and DB).
+2. [ ] Design and implement a SQLite schema for logs, events, solutions, attempts, responses.
+3. [ ] Implement a `DatabaseLogger` class for structured logging and retrieval.
+4. [ ] Update AI agent and orchestrator stubs to use the new logging/event system.
+5. [ ] Implement a learning module that suggests solutions based on past successes.
+6. [ ] Add query functions/scripts for system analysis and troubleshooting.
+7. [ ] Document the logging, learning, and query system in `/docs/AI_OPTIMIZATION.md`.
+
+### Completion Criteria
+- All AI actions/events/solutions are logged to the database.
+- The system can retrieve and suggest past successful solutions.
+- Queries for analysis and troubleshooting are implemented and documented.
+- All code is committed with clear messages and progress is tracked.
+
+---
