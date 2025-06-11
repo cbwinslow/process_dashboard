@@ -7,7 +7,7 @@ This module handles loading, saving, and managing application configuration sett
 import os
 import yaml
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
@@ -40,9 +40,9 @@ class DisplayConfig:
 @dataclass
 class DashboardConfig:
     """Main configuration class for the dashboard."""
-    theme: ThemeConfig = ThemeConfig()
-    updates: UpdateConfig = UpdateConfig()
-    display: DisplayConfig = DisplayConfig()
+    theme: ThemeConfig = field(default_factory=ThemeConfig)
+    updates: UpdateConfig = field(default_factory=UpdateConfig)
+    display: DisplayConfig = field(default_factory=DisplayConfig)
 
 def get_config_path() -> Path:
     """Get the path to the configuration file.

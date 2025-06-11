@@ -7,7 +7,7 @@ import json
 import tempfile
 from pathlib import Path
 import pytest
-from config.settings import DashboardConfig, load_or_create_config
+from src.config.settings import DashboardConfig, load_or_create_config
 
 @pytest.fixture
 def temp_config_file():

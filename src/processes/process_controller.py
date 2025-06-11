@@ -32,6 +32,7 @@ class ProcessState(Enum):
     IDLE = "idle"
     LOCKED = "locked"
     WAITING = "waiting"
+    UNKNOWN = "unknown"
 
 class ProcessPriority(Enum):
     """Process priority levels."""
@@ -333,12 +334,13 @@ class ProcessController:
         try:
             process = psutil.Process(pid)
             status = process.status()
-            
-            return ProcessState(status.lower())
-            
+            try:
+                return ProcessState(status.lower())
+            except ValueError:
+                return ProcessState.UNKNOWN
         except Exception as e:
             logger.error(f"Error getting process state: {e}")
-            return None
+            return ProcessState.UNKNOWN
 
     def get_process_color(self, pid: int) -> str:
         """Get display color for process.
@@ -380,7 +382,7 @@ class ProcessController:
                 'cpu_percent': process.cpu_percent(),
                 'memory_percent': process.memory_percent(),
                 'create_time': datetime.fromtimestamp(process.create_time()).isoformat(),
-                'state': self.get_process_state(pid).value if self.get_process_state(pid) else None,
+                'state': self.get_process_state(pid).value,
                 'color': self.get_process_color(pid),
                 'groups': [name for name, group in self.groups.items() if pid in group.processes],
                 'managed': self.managed_processes.get(pid, {})

@@ -3,61 +3,6 @@ Process monitoring module for the Process Dashboard.
 
 This module handles system process monitoring, resource tracking,
 and data formatting for display.
-        """Get all descendant process IDs for a given PID.
-        
-        Args:
-            pid: Process ID to get children for
-            
-        Returns:
-            Set of all descendant process IDs
-            
-        Raises:
-            ProcessLookupError: If the process does not exist
-        """
-        try:
-            # Check cache freshness
-            now = time()
-            if (pid in self._process_tree_cache and 
-                now - self._last_tree_update < self._tree_cache_ttl):
-                return self._process_tree_cache[pid]
-
-            # Build process tree recursively
-            children: Set[int] = set()
-            process = psutil.Process(pid)
-            
-            if not process.is_running():
-                return set()
-                
-            def add_children(proc: psutil.Process) -> None:
-                try:
-                    for child in proc.children():
-                        try:
-                            if child.is_running():  # Skip zombie processes
-                                children.add(child.pid)
-                                add_children(child)
-                        except (psutil.NoSuchProcess, psutil.ZombieProcess):
-                            continue
-                except psutil.AccessDenied:
-                    logger.warning(f"Access denied to children of PID {proc.pid}")
-                except Exception as e:
-                    logger.error(f"Error accessing children of PID {proc.pid}: {e}")
-
-            add_children(process)
-            
-            # Update cache
-            self._process_tree_cache[pid] = children
-            self._last_tree_update = now
-            
-            return children
-            
-        except psutil.NoSuchProcess:
-            raise ProcessLookupError(f"Process {pid} not found")
-        except psutil.AccessDenied:
-            logger.warning(f"Access denied to process {pid}")
-            return set()
-        except Exception as e:
-            logger.error(f"Error building process tree for PID {pid}: {e}")
-            return set()
 """
 
 import os
@@ -137,7 +82,7 @@ class ProcessMonitor:
                         'memory_percent': memory_percent,
                         'status': proc_info.get('status', 'unknown'),
                         'create_time': datetime.fromtimestamp(
-                            proc_info.get('create_time', time.time())
+                            proc_info.get('create_time', time())
                         ).strftime('%Y-%m-%d %H:%M:%S'),
                     }
                 except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
@@ -259,7 +204,7 @@ class ProcessMonitor:
         Args:
             current_processes: Current process information
         """
-        now = time.time()
+        now = time()
         
         # Only update history at specified interval
         if now - self.last_history_update < self.history_interval:
